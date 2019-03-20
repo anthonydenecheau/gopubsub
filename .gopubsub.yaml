@@ -1,0 +1,23 @@
+publisher:
+  example: "I AM PUBLISHER"
+  database:
+    username : "U_WEBSERVICES"
+    password : "INFPOLMDP155"
+    sid: "10.3.2.80:1521/LOFRE7"
+
+subscriber:
+  example: "I AM SUBSCRIBER"
+  database:
+    name : "ws_dev"
+    username : "ws_dev"
+    password : "ws_dev"
+    host: "10.3.2.5"    
+    port: "5432"
+
+pubsub:
+  topic: "dogTopic"
+  googlecloudprojectid: "lof-ws-test"
+  subscription: "dogSubscription"
+
+app:
+  name: "POC PubSub GOLANG"
