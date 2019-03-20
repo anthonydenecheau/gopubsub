@@ -22,7 +22,8 @@ type pubTask struct {
 }
 
 func makeTimestamp() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
+	//return time.Now().UnixNano() / int64(time.Millisecond)
+	return time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 }
 
 func (t Task) publishChange(message []*model.Dog, action string) {
@@ -50,11 +51,13 @@ func (t Task) sendMessage(message []*model.Dog, action string) {
 		switch {
 		case action == "U":
 			fmt.Println(">> UPDATE event")
-			t.publishChange(message, action)
+			t.publishChange(message, "UPDATE")
 		case action == "I":
 			fmt.Println(">> INSERT event")
+			t.publishChange(message, "SAVE")
 		case action == "D":
 			fmt.Println(">> DELETE event")
+			t.publishChange(message, "DELETE")
 		default:
 			fmt.Println(">> UNKNOWN event")
 		}

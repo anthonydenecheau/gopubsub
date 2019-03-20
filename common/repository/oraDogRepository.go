@@ -16,6 +16,12 @@ func NewOraDogRepository(Db *sql.DB) DogRepository {
 	return &oraDogRepository{Db}
 }
 
+func (oradb *oraDogRepository) Get(id int64) (*model.Dog, error) {
+	return nil, nil
+}
+func (oradb *oraDogRepository) UpsertDog(dog *model.Dog) error {
+	return nil
+}
 func (oradb *oraDogRepository) GetByID(id int64, action string) ([]*model.Dog, error) {
 
 	dogList := make([]*model.Dog, 0)
@@ -25,7 +31,7 @@ func (oradb *oraDogRepository) GetByID(id int64, action string) ([]*model.Dog, e
 			nom,
 			affixe,
 			sexe,
-			date_Naissance,
+			date_naissance,
 			pays,
 			tatouage,
 			transpondeur,
@@ -38,7 +44,9 @@ func (oradb *oraDogRepository) GetByID(id int64, action string) ([]*model.Dog, e
 			couleur_abr,
 			code_inscription,
 			id_Etalon,
-			id_Lice
+			id_Lice,
+			date_maj,
+			on_travail
 		FROM WS_DOG where id=:id`
 
 	if action != "D" {
@@ -50,7 +58,7 @@ func (oradb *oraDogRepository) GetByID(id int64, action string) ([]*model.Dog, e
 
 		for rows.Next() {
 			dog := new(model.Dog)
-			err := rows.Scan(&dog.Id,
+			err := rows.Scan(&dog.ID,
 				&dog.Nom,
 				&dog.Affixe,
 				&dog.Sexe,
@@ -58,16 +66,18 @@ func (oradb *oraDogRepository) GetByID(id int64, action string) ([]*model.Dog, e
 				&dog.Pays,
 				&dog.Tatouage,
 				&dog.Transpondeur,
-				&dog.CodeFci,
-				&dog.IdRace,
-				&dog.IdVariete,
+				&dog.Codefci,
+				&dog.Idrace,
+				&dog.Idvariete,
 				&dog.Race,
 				&dog.Variete,
 				&dog.Couleur,
-				&dog.CouleurAbr,
-				&dog.InscriptionCode,
-				&dog.IdEtalon,
-				&dog.IdLice)
+				&dog.Couleur_abr,
+				&dog.Code_inscription,
+				&dog.Id_etalon,
+				&dog.Id_lice,
+				&dog.Date_maj,
+				&dog.On_travail)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -79,7 +89,7 @@ func (oradb *oraDogRepository) GetByID(id int64, action string) ([]*model.Dog, e
 
 	} else {
 		dog := new(model.Dog)
-		dog.Id = id
+		dog.ID = id
 		dogList = append(dogList, dog)
 	}
 

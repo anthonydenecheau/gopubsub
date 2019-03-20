@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	pubsub "cloud.google.com/go/pubsub"
 	"github.com/anthonydenecheau/gopubsub/common/model"
@@ -18,21 +19,38 @@ type subTask struct {
 	dogService service.DogService
 }
 
-func (t *Task) Receive() error {
+func (d subTask) Receive() error {
 
 	ctx := context.Background()
 
 	// REF: https://github.com/GoogleCloudPlatform/golang-samples/blob/master/pubsub/subscriptions/main.go
 	// Pull messages via subscription1.
-	sub := t.pubService.GetClient().Subscription("dogSubscription")
+	sub := d.Task.pubService.GetClient().Subscription("dogSubscription")
 	error := sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		fmt.Printf("Got message: %q\n", string(msg.Data))
 		msg.Ack()
 
 		e := new(model.Event)
 		json.Unmarshal(msg.Data, &e)
+		action := e.Action
 		dog := new(model.Dog)
 		dog = e.Message
+		dog.Date_maj = time.Unix(e.Timestamp/1e3, (e.Timestamp%1e3)*int64(time.Millisecond)/int64(time.Nanosecond))
+
+		switch {
+		case action == "SAVE":
+		case action == "UPDATE":
+			fmt.Println(">> SAVE/UPDATE event")
+			err := d.dogService.UpsertDog(dog)
+			if err != nil {
+				fmt.Printf(">> ERROR %s\n", err)
+			}
+		case action == "DELETE":
+			fmt.Println(">> DELETE event")
+		default:
+			fmt.Println(">> UNKNOWN event")
+		}
+
 		fmt.Printf("Name dog : %s\n", dog.Nom)
 	})
 	if error != nil {

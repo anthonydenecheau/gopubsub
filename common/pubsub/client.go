@@ -19,7 +19,6 @@ type PubSubService interface {
 	GetClient() *pubsub.Client
 	GetTopic() string
 	Publish([]byte) error
-	//Receive() error
 	//PublishThatScales([]byte, int) error
 }
 
@@ -93,42 +92,20 @@ func (a *pubSubService) Publish(b []byte) error {
 func (a *pubSubService) Receive() error {
 
 	ctx := context.Background()
-
-	// REF: https://github.com/GoogleCloudPlatform/golang-samples/blob/master/pubsub/subscriptions/main.go
-	// Pull messages via subscription1.
+	var mu sync.Mutex
+	received := 0
 	sub := a.Client.Subscription("dogSubscription")
-	error := sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-		fmt.Printf("Got message: %q\n", string(msg.Data))
+	cctx, cancel := context.WithCancel(ctx)
+	sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
 		msg.Ack()
-
-		e := new(model.Event)
-		json.Unmarshal(msg.Data, &e)
-		dog := new(model.Dog)
-		dog = e.Message
-		fmt.Printf("Name dog : %s\n", dog.Nom)
+		fmt.Printf("Got message: %q\n", string(msg.Data))
+		mu.Lock()
+		defer mu.Unlock()
+		received++
+		if received == 10 {
+			cancel()
+		}
 	})
-	if error != nil {
-		return error
-	}
-
-//COMMENT
-		var mu sync.Mutex
-		received := 0
-		sub := a.Client.Subscription("dogSubscription")
-		cctx, cancel := context.WithCancel(ctx)
-		sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
-			msg.Ack()
-			fmt.Printf("Got message: %q\n", string(msg.Data))
-			mu.Lock()
-			defer mu.Unlock()
-			received++
-			if received == 10 {
-				cancel()
-			}
-		})
-//COMMENT
-
-
 	return nil
 }
 */
