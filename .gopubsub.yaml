@@ -19,5 +19,27 @@ pubsub:
   googlecloudprojectid: "lof-ws-test"
   subscription: "dogSubscription"
 
+logger:
+  out:  
+    name: "stderr"
+    options: {}
+  level: "error"
+  formatter:   
+    name: "json"
+  hooks:  
+    name: "file"
+    options:
+      directory : "C:/Temp/"
+      filename: "access_log"
+      maxdays: 7
+      priority: "LOG_INFO"
+      tag: ""
+    mail:
+      subject: "Alerte %s"
+      sender: "noreply@centrale-canine.fr"
+      receivers : "anthony.denecheau@centrale-canine.fr"
+      mj_api_public : "MJKeyPublic"
+      mj_api_private : "MJKeyPrivate"
+
 app:
   name: "POC PubSub GOLANG"

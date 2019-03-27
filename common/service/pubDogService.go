@@ -23,7 +23,7 @@ func (a *dogService) GetFilter() string { return a.filter }
 func NewDogService(r repository.DogRepository) DogService {
 	return &dogService{
 		dr:     r,
-		filter: "CHIEN",
+		filter: DogDomaine,
 	}
 }
 
@@ -37,12 +37,12 @@ func (a *dogService) BuildMessage(id int64, action string) ([]*model.Dog, error)
 	return message, nil
 }
 
-func (a *dogService) UpsertDog(dog *model.Dog) error {
+func (a *dogService) UpsertDog(dog *model.Dog) (err error) {
 
 	// Contrôle du timestamp ...
-	d, errGet := a.dr.Get(dog.ID)
-	if errGet != nil {
-		return errGet
+	d, err := a.dr.Get(dog.ID)
+	if err != nil {
+		return err
 	}
 	// ... dans le cas où le chien a été préalablement enregistré
 	if d != nil {
@@ -54,9 +54,9 @@ func (a *dogService) UpsertDog(dog *model.Dog) error {
 		}
 	}
 
-	errUp := a.dr.UpsertDog(dog)
-	if errUp != nil {
-		return errUp
+	err = a.dr.UpsertDog(dog)
+	if err != nil {
+		return err
 	}
 
 	return nil

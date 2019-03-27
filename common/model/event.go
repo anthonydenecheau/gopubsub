@@ -1,10 +1,8 @@
 package model
 
 type Event struct {
-	Type   string
-	Action string
-	//le sub Java n'accepte pas d'array
-	//Message   []*Dog
-	Message   *Dog
-	Timestamp int64
+	Type      string `json:"type"`
+	Action    string `json:"action"`
+	Message   []*Dog `json:"message"`
+	Timestamp int64  `json:"timestamp"`
 }

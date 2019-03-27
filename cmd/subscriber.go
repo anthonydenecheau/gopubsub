@@ -20,7 +20,7 @@ import (
 	"os"
 	"time"
 
-	pubConfig "github.com/anthonydenecheau/gopubsub/common/pubsub"
+	subConfig "github.com/anthonydenecheau/gopubsub/common/config"
 	dogRepository "github.com/anthonydenecheau/gopubsub/common/repository"
 	dogService "github.com/anthonydenecheau/gopubsub/common/service"
 	subTask "github.com/anthonydenecheau/gopubsub/common/task"
@@ -71,7 +71,7 @@ to quickly create a Cobra application.`,
 		// dog service
 		ds := dogService.NewDogService(dr)
 		// publisher
-		pubSubGateway := pubConfig.NewSubscriber()
+		pubSubGateway := subConfig.NewSubscriber()
 		// initialize all
 		subTask.NewSubTask(dbPg, ds, pubSubGateway)
 

@@ -16,15 +16,25 @@ package cmd
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 	"os"
 
-	pubConfig "github.com/anthonydenecheau/gopubsub/common/pubsub"
+	logConfig "github.com/anthonydenecheau/gopubsub/common/config"
+	pubConfig "github.com/anthonydenecheau/gopubsub/common/config"
+	breederRepository "github.com/anthonydenecheau/gopubsub/common/repository"
 	dogRepository "github.com/anthonydenecheau/gopubsub/common/repository"
+	ownerRepository "github.com/anthonydenecheau/gopubsub/common/repository"
+	parentRepository "github.com/anthonydenecheau/gopubsub/common/repository"
+	pedigreeRepository "github.com/anthonydenecheau/gopubsub/common/repository"
+	titleRepository "github.com/anthonydenecheau/gopubsub/common/repository"
+	breederService "github.com/anthonydenecheau/gopubsub/common/service"
+	constantService "github.com/anthonydenecheau/gopubsub/common/service"
 	dogService "github.com/anthonydenecheau/gopubsub/common/service"
+	ownerService "github.com/anthonydenecheau/gopubsub/common/service"
+	parentService "github.com/anthonydenecheau/gopubsub/common/service"
+	pedigreeService "github.com/anthonydenecheau/gopubsub/common/service"
+	personService "github.com/anthonydenecheau/gopubsub/common/service"
+	titleService "github.com/anthonydenecheau/gopubsub/common/service"
 	pubTask "github.com/anthonydenecheau/gopubsub/common/task"
-
 	"github.com/spf13/cobra"
 	"gopkg.in/goracle.v2"
 )
@@ -48,17 +58,24 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("publisher called")
-		log.Printf("Publisher %s", configuration.Publisher.Example)
-		log.Printf("Publisher username is %s", configuration.Publisher.Database.Username)
-		log.Printf("Publisher password is %s", configuration.Publisher.Database.Password)
-		log.Printf("Publisher SID is %s", configuration.Publisher.Database.SID)
-
-		log.Printf("Pubsub topic is %s", configuration.PubSub.Topic)
-		log.Printf("PubSub project id is %s", configuration.PubSub.GoogleCloudProjectId)
 
 		os.Setenv("PUBSUB_TOPIC", configuration.PubSub.Topic)
 		os.Setenv("GOOGLE_CLOUD_PROJECT", configuration.PubSub.GoogleCloudProjectId)
+
+		var err error
+		log, file := logConfig.NewLogger(configuration.Logger, configuration.App)
+		if file != nil {
+			defer file.Close()
+		}
+
+		log.Info("Start Application!")
+		log.Infof("Publisher %s", configuration.Publisher.Example)
+		log.Infof("Publisher username is %s", configuration.Publisher.Database.Username)
+		log.Infof("Publisher password is %s", configuration.Publisher.Database.Password)
+		log.Infof("Publisher SID is %s", configuration.Publisher.Database.SID)
+
+		log.Infof("Pubsub topic is %s", configuration.PubSub.Topic)
+		log.Infof("PubSub project id is %s", configuration.PubSub.GoogleCloudProjectId)
 
 		P := goracle.ConnectionParams{
 			Username:    configuration.Publisher.Database.Username,
@@ -70,36 +87,70 @@ to quickly create a Cobra application.`,
 		}
 
 		testConStr = P.StringWithPassword()
-		var err error
 		if dbOracle, err = sql.Open("goracle", testConStr); err != nil {
-			fmt.Printf("ERROR: %+v\n", err)
+			log.Fatalf("Oracle Connection FAILED : %s", err.Error())
 			return
-			//panic(err)
 		}
 		defer dbOracle.Close()
 
 		if dbOracle != nil {
 			if clientVersion, err = goracle.ClientVersion(dbOracle); err != nil {
-				fmt.Printf("ERROR: %+v\n", err)
+				log.Fatalf("clientVersion FAILED : %s", err.Error())
 				return
 			}
 			if serverVersion, err = goracle.ServerVersion(dbOracle); err != nil {
-				fmt.Printf("ERROR: %+v\n", err)
+				log.Fatalf("serverVersion FAILED : %s", err.Error())
 				return
 			}
-			fmt.Println("Server:", serverVersion)
-			fmt.Println("Client:", clientVersion)
+			log.Info("Server :", serverVersion)
+			log.Info("Client : ", clientVersion)
 		}
 
-		// dog repository
+		// dog repository, service
 		dr := dogRepository.NewOraDogRepository(dbOracle)
-		// dog service
 		ds := dogService.NewDogService(dr)
+
+		// breeder repository, service
+		br := breederRepository.NewOraBreederRepository(dbOracle)
+		bs := breederService.NewBreederService(br)
+
+		// owner repository, service
+		or := ownerRepository.NewOraOwnerRepository(dbOracle)
+		os := ownerService.NewOwnerService(or)
+
+		// parent repository, service
+		pr := parentRepository.NewOraParentRepository(dbOracle)
+		ps := parentService.NewParentService(pr)
+
+		// pedigree repository, service
+		lr := pedigreeRepository.NewOraPedigreeRepository(dbOracle)
+		ls := pedigreeService.NewPedigreeService(lr)
+
+		// titre francais et etranger repository, service
+		tr := titleRepository.NewOraTitleRepository(dbOracle)
+		tsf := titleService.NewTitleService(tr, constantService.TitleDomaineFr)
+		tse := titleService.NewTitleService(tr, constantService.TitleDomaineEtr)
+
+		// personne repository, service
+		ns := personService.NewPersonService(br, or)
+
 		// publisher
 		pubSubGateway := pubConfig.NewPublisher()
 		// initialize all
-		pubTask.NewTask(dbOracle, ds, pubSubGateway)
+		pubTask.NewTask(
+			dbOracle,
+			ds,
+			bs,
+			os,
+			ps,
+			ls,
+			tsf,
+			tse,
+			ns,
+			pubSubGateway,
+			log)
 
+		log.Info("End Application!")
 	},
 }
 

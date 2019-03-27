@@ -5,4 +5,5 @@ type Configuration struct {
 	Publisher  PublisherConfiguration
 	Subscriber SubscriberConfiguration
 	PubSub     PubSubConfiguration
+	Logger     LoggerConfiguration
 }

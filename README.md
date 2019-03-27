@@ -1,7 +1,6 @@
 
 ## ORACLE 
 https://github.com/go-goracle/goracle/tree/v2.12.3
-
 https://blogs.oracle.com/developers/how-to-connect-a-go-program-to-oracle-database-using-goracle
 
 go get gopkg.in/goracle.v2
@@ -16,7 +15,11 @@ Installer mingw-w64-install.exe
 Créer une variable d'environnement MINGWPATH  C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64
 Ajouter au PATH: %MINGWPATH%\bin
 
+## ENVIRONNEMENT
+* Positionner les variables : MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE, GOOGLE_APPLICATION_CREDENTIALS
+
 ## RUN 
 go run main.go --config C:\Users\adenecheau\go\src\github.com\anthonydenecheau\gopubsub\.gopubsub.yaml publisher
+go run main.go --config C:\Users\adenecheau\go\src\github.com\anthonydenecheau\gopubsub\.gopubsub.yaml --config C:\TEMP\.gopubsub.yaml publisher
 
 go run main.go --config C:\Users\adenecheau\go\src\github.com\anthonydenecheau\gopubsub\.gopubsub.yaml subscriber
