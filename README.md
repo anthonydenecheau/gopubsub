@@ -16,6 +16,7 @@ Créer une variable d'environnement MINGWPATH  C:\Program Files\mingw-w64\x86_64
 Ajouter au PATH: %MINGWPATH%\bin
 
 ## ENVIRONNEMENT
+
 * Positionner les variables : MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE, GOOGLE_APPLICATION_CREDENTIALS
 
 ## RUN 
